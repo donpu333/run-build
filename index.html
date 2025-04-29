@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Binance Dashboard</title>
+    <link rel="preload" href="https://s3.tradingview.com/tv.js" as="script" crossorigin>
+    <link rel="preconnect" href="https://s3.tradingview.com">
     <link rel="preconnect" href="https://api.binance.com">
     <link rel="preconnect" href="https://fapi.binance.com">
     <link rel="preconnect" href="https://stream.binance.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Custom chart styles -->
-    <link rel="stylesheet" crossorigin href="./index-aUSKK6K5.css">
     <style>
         :root {
             --bg-primary: #121212;
@@ -56,13 +56,6 @@
 
         .chart {
             flex: 1;
-            width: 100%;
-            height: 100%;
-        }
-
-        #chart {
-            width: 100%;
-            height: 100%;
         }
 
         .ticker-list {
@@ -73,7 +66,6 @@
             flex-direction: column;
         }
 
-        /* Remaining styles unchanged */
         .management-panel {
             padding: 12px;
             background-color: var(--bg-primary);
@@ -271,6 +263,10 @@
             position: relative;
         }
 
+        .tv-lightweight-charts {
+            border-radius: 0 !important;
+        }
+
         @keyframes flash-positive {
             0% { background-color: rgba(46, 125, 50, 0); }
             50% { background-color: rgba(46, 125, 50, 0.3); }
@@ -279,7 +275,7 @@
 
         @keyframes flash-negative {
             0% { background-color: rgba(198, 40, 40, 0); }
-            50% {  { background-color: rgba(198, 40, 40, 0.3); }
+            50% { background-color: rgba(198, 40, 40, 0.3); }
             100% { background-color: rgba(198, 40, 40, 0); }
         }
 
@@ -311,7 +307,6 @@
         .sort-options {
             display: flex;
             padding: 5px 15px;
-CUT HERE
             background-color: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             gap: 10px;
@@ -485,38 +480,106 @@ CUT HERE
         }
 
         .chart-settings-panel {
-            display: flex;
-            padding: 8px 15px;
-            background-color: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-            gap: 10px;
-            position: sticky;
+            display: none;
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
             top: 0;
-            z-index: 10;
-        }
-
-        .chart-settings-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1em;
-            padding: 5px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            align-items: center;
         }
 
-        .chart-settings-btn:hover {
-            background-color: var(--hover-color);
+        .settings-modal-content {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 5px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .settings-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .settings-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: var(--bg-secondary);
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        .settings-tab.active {
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .settings-tab-content {
+            display: none;
+        }
+
+        .settings-tab-content.active {
+            display: block;
+        }
+
+        .settings-group {
+            margin-bottom: 15px;
+        }
+
+        .settings-group-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--accent-blue);
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .settings-option label {
+            flex: 1;
+        }
+
+        .settings-option select,
+        .settings-option input[type="number"] {
+            width: 150px;
+            padding: 5px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
             color: var(--text-primary);
         }
 
-        .chart-settings-btn.active {
-            color: var(--accent-blue);
+        .settings-option-color {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .market-type-selector {
@@ -669,14 +732,35 @@ CUT HERE
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
         }
+
+        /* Custom Chart Styles */
+        #chart-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .klinecharts-pro-watermark {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            transform: translate(-50%, -50%);
+            opacity: 0.0;
+            pointer-events: none;
+        }
+
+        .klinecharts-pro-watermark .logo {
+            width: 160px;
+            height: 184px;
+            fill: #76808F;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="chart-container">
-            <div class="chart">
-                <div id="chart"></div> <!-- Chart container for custom chart -->
-            </div>
+            <div id="chart-container" class="chart"></div>
         </div>
         <div class="ticker-list">
             <div class="management-panel">
@@ -700,7 +784,7 @@ CUT HERE
                 <div class="tab" data-tab="custom">Мои пары</div>
                 <div class="tab" data-tab="flags">Флажки</div>
             </div>
-            <div class="tabs" id "flagTabs" style="display: none;">
+            <div class="tabs" id="flagTabs" style="display: none;">
                 <div class="tab active" data-flag="all">Все</div>
                 <div class="tab" data-flag="red">Красные</div>
                 <div class="tab" data-flag="blue">Синие</div>
@@ -720,7 +804,7 @@ CUT HERE
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Добавление нескольких пар</div>
-                <button class="close-modal">×</button>
+                <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="instructions">
@@ -730,6 +814,7 @@ CUT HERE
                     ETHUSDT<br>
                     SOLUSDT
                 </div>
+
                 <div class="file-input-wrapper">
                     <label class="file-input-label" for="symbolsFile">
                         <i class="fas fa-file-upload"></i> Загрузить из TXT файла
@@ -737,6 +822,7 @@ CUT HERE
                     </label>
                     <input type="file" id="symbolsFile" class="file-input" accept=".txt">
                 </div>
+
                 <textarea class="modal-textarea" id="symbolsTextarea" placeholder="Введите символы пар, например: BTCUSDT, ETHUSDT, SOLUSDT"></textarea>
             </div>
             <div class="modal-footer">
@@ -769,10 +855,19 @@ CUT HERE
         </div>
     </div>
 
-    <!-- Custom chart script -->
     <script type="module" crossorigin src="./index-C4Jf-lH9.js"></script>
+    <link rel="stylesheet" crossorigin href="./index-aUSKK6K5.css">
 
     <script type="text/javascript">
+        // Глобальные переменные для управления состоянием загрузки
+        let DashboardInstance = null;
+
+        // Обработчик события DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Инициализация дашборда
+            DashboardInstance = new BinanceDashboard();
+        });
+
         class BinanceDashboard {
             constructor() {
                 this.state = {
@@ -785,6 +880,24 @@ CUT HERE
                     sortBy: 'volume',
                     sortDirection: 'desc',
                     marketType: localStorage.getItem('marketType') || 'futures',
+                    chartSettings: JSON.parse(localStorage.getItem('chartSettings')) || {
+                        chartStyle: '0',
+                        candleStyle: '0',
+                        upColor: '#26a69a',
+                        downColor: '#ef5350',
+                        wickColor: '#000000',
+                        borderColor: '#378658',
+                        backgroundColor: '#121212',
+                        gridColor: '#2d2d2d',
+                        priceScale: '1',
+                        timeScale: '0',
+                        rightMargin: '30',
+                        showPriceAxis: true,
+                        priceScaleMode: '0',
+                        showTradingPanel: true,
+                        showOrderLines: true,
+                        showPositionLines: true
+                    },
                     ws: null,
                     wsReconnectAttempts: 0,
                     maxWsReconnectAttempts: 5,
@@ -795,8 +908,8 @@ CUT HERE
 
                 this.tickers = [];
                 this.allSymbolsCache = [];
-                this.chartInstance = null;
 
+                // Начинаем инициализацию данных
                 this.initializeData();
             }
 
@@ -805,47 +918,35 @@ CUT HERE
                     await this.fetchAllSymbols();
                     this.initializeTickers();
                     this.connectWebSocket();
-                    this.initChart();
+                    this.initCustomChart(this.state.currentSymbol);
                     this.renderTickerList();
                     this.setupUIEventListeners();
                     this.setupDragAndDrop();
                 } catch (error) {
                     console.error("Ошибка инициализации данных:", error);
+                    // Повторная попытка через 5 секунд
                     setTimeout(() => this.initializeData(), 5000);
                 }
             }
 
-            initChart() {
-                const container = document.getElementById('chart');
-                container.innerHTML = ''; // Clear any existing content
+            initCustomChart(symbol) {
+                // Initialize the custom chart here
+                const chartContainer = document.getElementById('chart-container');
 
-                // Assume index-C4Jf-lH9.js exposes a global ChartAPI or similar
-                // This is a placeholder; adjust based on the actual API of index-C4Jf-lH9.js
-                if (typeof ChartAPI !== 'undefined') {
-                    this.chartInstance = new ChartAPI({
-                        container: '#chart',
-                        symbol: this.state.currentSymbol,
-                        marketType: this.state.marketType,
-                        theme: 'dark',
-                        interval: '1d'
-                    });
-                    this.updateChart();
-                } else {
-                    console.warn('ChartAPI not found. Falling back to basic placeholder.');
-                    container.innerHTML = '<div>Инициализация графика...</div>';
-                    // Optional: Implement Chart.js fallback here
-                }
-            }
+                // Example initialization code (replace with actual initialization)
+                const chart = new KlineCharts.init(chartContainer);
+                chart.createChart();
+                chart.applyNewData([
+                    {
+                        symbol: symbol,
+                        data: [
+                            // Example data (replace with actual data)
+                            { time: '2023-10-01T00:00:00Z', open: 20000, high: 20500, low: 19500, close: 20200, volume: 100 }
+                        ]
+                    }
+                ]);
 
-            updateChart() {
-                if (this.chartInstance && typeof this.chartInstance.update === 'function') {
-                    this.chartInstance.update({
-                        symbol: this.state.currentSymbol,
-                        marketType: this.state.marketType
-                    });
-                } else {
-                    console.warn('Chart update not supported.');
-                }
+                this.state.chartInstance = chart;
             }
 
             async fetchAllSymbols() {
@@ -964,6 +1065,16 @@ CUT HERE
                 }
             }
 
+            scheduleReconnect() {
+                if (this.state.wsReconnectAttempts < this.state.maxWsReconnectAttempts) {
+                    this.state.wsReconnectAttempts++;
+                    const delay = Math.min(5000, this.state.wsReconnectAttempts * 1000);
+                    setTimeout(() => this.connectWebSocket(), delay);
+                } else {
+                    console.log("Превышено максимальное количество попыток переподключения WebSocket");
+                }
+            }
+
             initializeTickers() {
                 const defaultFuturesSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT"];
                 const defaultSpotSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT"];
@@ -1050,7 +1161,7 @@ CUT HERE
 
                 if (this.state.currentSymbol === symbol) {
                     this.state.currentSymbol = 'BTCUSDT';
-                    this.updateChart();
+                    this.initCustomChart(this.state.currentSymbol);
                 }
 
                 this.renderTickerList();
@@ -1153,7 +1264,7 @@ CUT HERE
                     const marketTagClass = ticker.marketType === 'futures' ? 'perpetual' : 'spot';
 
                     const flagKey = `${ticker.symbol}:${ticker.marketType}`;
-                    const flag = this.state.flags[flagKey] ||reads null;
+                    const flag = this.state.flags[flagKey] || null;
                     const flagHTML = flag ? `<div class="flag flag-${flag}"></div>` : '';
 
                     html += `
@@ -1338,6 +1449,7 @@ CUT HERE
                 localStorage.setItem('favorites', JSON.stringify(this.state.favorites));
                 localStorage.setItem('customSymbols', JSON.stringify(this.state.customSymbols));
                 localStorage.setItem('flags', JSON.stringify(this.state.flags));
+                localStorage.setItem('chartSettings', JSON.stringify(this.state.chartSettings));
                 localStorage.setItem('marketType', this.state.marketType);
             }
 
@@ -1348,7 +1460,7 @@ CUT HERE
                             const symbol = item.dataset.symbol;
                             if (symbol !== this.state.currentSymbol) {
                                 this.state.currentSymbol = symbol;
-                                this.updateChart();
+                                this.initCustomChart(symbol);
                                 this.renderTickerList();
                             }
                             return;
@@ -1360,7 +1472,7 @@ CUT HERE
                         const symbol = item.dataset.symbol;
                         if (symbol !== this.state.currentSymbol) {
                             this.state.currentSymbol = symbol;
-                            this.updateChart();
+                            this.initCustomChart(symbol);
                             this.renderTickerList();
                         }
                     });
@@ -1401,7 +1513,7 @@ CUT HERE
                         this.state.wsReconnectAttempts = 0;
                         this.initializeTickers();
                         this.connectWebSocket();
-                        this.updateChart();
+                        this.initCustomChart(this.state.currentSymbol);
                         this.renderTickerList();
                         this.saveState();
                     });
@@ -1657,21 +1769,7 @@ CUT HERE
                     items[i].classList.remove("autocomplete-active");
                 }
             }
-
-            scheduleReconnect() {
-                if (this.state.wsReconnectAttempts < this.state.maxWsReconnectAttempts) {
-                    const delay = Math.min(5000, 1000 * Math.pow(2, this.state.wsReconnectAttempts));
-                    this.state.wsReconnectAttempts++;
-                    setTimeout(() => this.connectWebSocket(), delay);
-                } else {
-                    console.error("Превышено максимальное количество попыток переподключения WebSocket");
-                }
-            }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            new BinanceDashboard();
-        });
     </script>
 </body>
 </html>
