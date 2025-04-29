@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Binance Dashboard</title>
-    <link rel="preload" href="https://s3.tradingview.com/tv.js" as="script" crossorigin>
-    <link rel="preconnect" href="https://s3.tradingview.com">
     <link rel="preconnect" href="https://api.binance.com">
     <link rel="preconnect" href="https://fapi.binance.com">
     <link rel="preconnect" href="https://stream.binance.com">
@@ -52,10 +50,6 @@
             flex-direction: column;
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
-        }
-
-        .chart {
-            flex: 1;
         }
 
         .ticker-list {
@@ -261,10 +255,6 @@
             flex: 1;
             overflow-y: auto;
             position: relative;
-        }
-
-        .tv-lightweight-charts {
-            border-radius: 0 !important;
         }
 
         @keyframes flash-positive {
@@ -479,109 +469,6 @@
             line-height: 1.5;
         }
 
-        .chart-settings-panel {
-            display: none;
-        }
-
-        .settings-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .settings-modal-content {
-            background-color: var(--bg-secondary);
-            padding: 20px;
-            border-radius: 5px;
-            width: 500px;
-            max-width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .settings-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 15px;
-        }
-
-        .settings-tab {
-            padding: 8px 15px;
-            cursor: pointer;
-            background-color: var(--bg-secondary);
-            border-bottom: 2px solid transparent;
-            font-weight: 500;
-        }
-
-        .settings-tab.active {
-            border-bottom: 2px solid var(--accent-blue);
-        }
-
-        .settings-tab-content {
-            display: none;
-        }
-
-        .settings-tab-content.active {
-            display: block;
-        }
-
-        .settings-group {
-            margin-bottom: 15px;
-        }
-
-        .settings-group-title {
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: var(--accent-blue);
-        }
-
-        .settings-option {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .settings-option label {
-            flex: 1;
-        }
-
-        .settings-option select,
-        .settings-option input[type="number"] {
-            width: 150px;
-            padding: 5px;
-            background-color: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-
-        .settings-option-color {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .color-preview {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
-        .settings-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
         .market-type-selector {
             display: flex;
             padding: 5px 15px;
@@ -732,35 +619,12 @@
             color: var(--text-primary);
             font-family: 'JetBrains Mono', monospace;
         }
-
-        /* Custom Chart Styles */
-        #chart-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .klinecharts-pro-watermark {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            z-index: 1;
-            transform: translate(-50%, -50%);
-            opacity: 0.0;
-            pointer-events: none;
-        }
-
-        .klinecharts-pro-watermark .logo {
-            width: 160px;
-            height: 184px;
-            fill: #76808F;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="chart-container">
-            <div id="chart-container" class="chart"></div>
+            <!-- Chart container removed -->
         </div>
         <div class="ticker-list">
             <div class="management-panel">
@@ -855,9 +719,6 @@
         </div>
     </div>
 
-    <script type="module" crossorigin src="./index-C4Jf-lH9.js"></script>
-    <link rel="stylesheet" crossorigin href="./index-aUSKK6K5.css">
-
     <script type="text/javascript">
         // Глобальные переменные для управления состоянием загрузки
         let DashboardInstance = null;
@@ -918,7 +779,6 @@
                     await this.fetchAllSymbols();
                     this.initializeTickers();
                     this.connectWebSocket();
-                    this.initCustomChart(this.state.currentSymbol);
                     this.renderTickerList();
                     this.setupUIEventListeners();
                     this.setupDragAndDrop();
@@ -927,26 +787,6 @@
                     // Повторная попытка через 5 секунд
                     setTimeout(() => this.initializeData(), 5000);
                 }
-            }
-
-            initCustomChart(symbol) {
-                // Initialize the custom chart here
-                const chartContainer = document.getElementById('chart-container');
-
-                // Example initialization code (replace with actual initialization)
-                const chart = new KlineCharts.init(chartContainer);
-                chart.createChart();
-                chart.applyNewData([
-                    {
-                        symbol: symbol,
-                        data: [
-                            // Example data (replace with actual data)
-                            { time: '2023-10-01T00:00:00Z', open: 20000, high: 20500, low: 19500, close: 20200, volume: 100 }
-                        ]
-                    }
-                ]);
-
-                this.state.chartInstance = chart;
             }
 
             async fetchAllSymbols() {
@@ -1161,7 +1001,6 @@
 
                 if (this.state.currentSymbol === symbol) {
                     this.state.currentSymbol = 'BTCUSDT';
-                    this.initCustomChart(this.state.currentSymbol);
                 }
 
                 this.renderTickerList();
@@ -1460,7 +1299,6 @@
                             const symbol = item.dataset.symbol;
                             if (symbol !== this.state.currentSymbol) {
                                 this.state.currentSymbol = symbol;
-                                this.initCustomChart(symbol);
                                 this.renderTickerList();
                             }
                             return;
@@ -1472,7 +1310,6 @@
                         const symbol = item.dataset.symbol;
                         if (symbol !== this.state.currentSymbol) {
                             this.state.currentSymbol = symbol;
-                            this.initCustomChart(symbol);
                             this.renderTickerList();
                         }
                     });
@@ -1513,7 +1350,6 @@
                         this.state.wsReconnectAttempts = 0;
                         this.initializeTickers();
                         this.connectWebSocket();
-                        this.initCustomChart(this.state.currentSymbol);
                         this.renderTickerList();
                         this.saveState();
                     });
