@@ -10,7 +10,9 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Your existing CSS styles */
         :root {
             --bg-primary: #121212;
             --bg-secondary: #1E1E1E;
@@ -50,6 +52,15 @@
             flex-direction: column;
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
+        }
+
+        .chart {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 1.2em;
         }
 
         .ticker-list {
@@ -469,6 +480,41 @@
             line-height: 1.5;
         }
 
+        .chart-settings-panel {
+            display: flex;
+            padding: 8px 15px;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .chart-settings-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1em;
+            padding: 5px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+        }
+
+        .chart-settings-btn:hover {
+            background-color: var(--hover-color);
+            color: var(--text-primary);
+        }
+
+        .chart-settings-btn.active {
+            color: var(--accent-blue);
+        }
+
         .market-type-selector {
             display: flex;
             padding: 5px 15px;
@@ -624,7 +670,9 @@
 <body>
     <div class="container">
         <div class="chart-container">
-            <!-- Chart container removed -->
+            <div class="chart">
+                <canvas id="myChart"></canvas>
+            </div>
         </div>
         <div class="ticker-list">
             <div class="management-panel">
@@ -720,15 +768,6 @@
     </div>
 
     <script type="text/javascript">
-        // Глобальные переменные для управления состоянием загрузки
-        let DashboardInstance = null;
-
-        // Обработчик события DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', () => {
-            // Инициализация дашборда
-            DashboardInstance = new BinanceDashboard();
-        });
-
         class BinanceDashboard {
             constructor() {
                 this.state = {
@@ -741,24 +780,6 @@
                     sortBy: 'volume',
                     sortDirection: 'desc',
                     marketType: localStorage.getItem('marketType') || 'futures',
-                    chartSettings: JSON.parse(localStorage.getItem('chartSettings')) || {
-                        chartStyle: '0',
-                        candleStyle: '0',
-                        upColor: '#26a69a',
-                        downColor: '#ef5350',
-                        wickColor: '#000000',
-                        borderColor: '#378658',
-                        backgroundColor: '#121212',
-                        gridColor: '#2d2d2d',
-                        priceScale: '1',
-                        timeScale: '0',
-                        rightMargin: '30',
-                        showPriceAxis: true,
-                        priceScaleMode: '0',
-                        showTradingPanel: true,
-                        showOrderLines: true,
-                        showPositionLines: true
-                    },
                     ws: null,
                     wsReconnectAttempts: 0,
                     maxWsReconnectAttempts: 5,
@@ -902,16 +923,6 @@
                     }
                 } catch (e) {
                     console.log("Ошибка обработки данных тикера:", e);
-                }
-            }
-
-            scheduleReconnect() {
-                if (this.state.wsReconnectAttempts < this.state.maxWsReconnectAttempts) {
-                    this.state.wsReconnectAttempts++;
-                    const delay = Math.min(5000, this.state.wsReconnectAttempts * 1000);
-                    setTimeout(() => this.connectWebSocket(), delay);
-                } else {
-                    console.log("Превышено максимальное количество попыток переподключения WebSocket");
                 }
             }
 
@@ -1288,7 +1299,6 @@
                 localStorage.setItem('favorites', JSON.stringify(this.state.favorites));
                 localStorage.setItem('customSymbols', JSON.stringify(this.state.customSymbols));
                 localStorage.setItem('flags', JSON.stringify(this.state.flags));
-                localStorage.setItem('chartSettings', JSON.stringify(this.state.chartSettings));
                 localStorage.setItem('marketType', this.state.marketType);
             }
 
@@ -1605,7 +1615,22 @@
                     items[i].classList.remove("autocomplete-active");
                 }
             }
+
+            scheduleReconnect() {
+                if (this.state.wsReconnectAttempts < this.state.maxWsReconnectAttempts) {
+                    const delay = Math.min(5000, 1000 * Math.pow(2, this.state.wsReconnectAttempts));
+                    this.state.wsReconnectAttempts++;
+                    setTimeout(() => this.connectWebSocket(), delay);
+                } else {
+                    console.error("Превышено максимальное количество попыток переподключения WebSocket");
+                }
+            }
         }
+
+        // Обработчик события DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new BinanceDashboard();
+        });
     </script>
 </body>
 </html>
